@@ -12,7 +12,7 @@ import csv
 from collections import namedtuple
 
 CSVRow = namedtuple('CSVRow', 'id c r e name path classification')
-a2_attr = 'path holes verticals horizontals oil creased frige others'
+a2_attr = 'path holes stripe oil creased frige others'
 A2Row = namedtuple('A2Row', a2_attr)
 a2_header = a2_attr.split(' ')
 
@@ -64,21 +64,20 @@ with open('a2.csv', 'w', encoding='UTF8') as f:
     for row in rows:
         clas = strip_accents(row.classification).lower().strip()
         hole = 'agujero' in clas
-        crease = 'pliegue' in clas or 'doble en' in clas
+        crease = 'pliegue' in clas or 'doble en' in clas or ('arruga' in clas)
         fringe = 'franja' in clas
         stripe = 'raya' in clas
         wide = 'a lo largo' in clas
         mancha = 'mancha' in clas
         oil = 'aceite' in clas or 'grasa' in clas or 'corta' in clas
-        other = mancha or (stripe and not wide) or ('hilo' in clas) or ('pelusa' in clas) or ('desgarro' in clas) or ('enhebre' in clas) or ('grieta' in clas) or ('salpicadura' in clas) or ('fallas' in clas) or ('arruga' in clas) or ('defecto' in clas) or ('pase la tela' in clas) or ('extranos' in clas) or ('pequeno' in clas or 'hoja de papel' in clas)
+        other = mancha or (stripe and not wide) or ('hilo' in clas) or ('pelusa' in clas) or ('desgarro' in clas) or ('enhebre' in clas) or ('grieta' in clas) or ('salpicadura' in clas) or ('fallas' in clas)  or ('defecto' in clas) or ('pase la tela' in clas) or ('extranos' in clas) or ('pequeno' in clas or 'hoja de papel' in clas)
         not_error =  ('sombra' in clas) or \
                     (('lampara' in clas or 'luz' in clas) and \
                          'apagada' in clas) or \
                     ('desalineada' in clas and 'lampara' in clas) or \
                     (('distancia' in clas or 'inclinada' in clas) and \
                         'camara' in clas)
-        vertical = False
-        all_errs = [hole, vertical, wide, oil, crease, fringe, other]
+        all_errs = [hole, wide, oil, crease, fringe, other]
         any_err = any(all_errs)
         if clas and not any_err and not not_error:
             print('?', row.path, clas)
