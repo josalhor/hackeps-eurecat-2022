@@ -35,8 +35,32 @@ with open(csv_path, newline='') as csvfile:
 def hole_label(f):
     return path_to_tp[f].holes
 
-dls = ImageDataLoaders.from_name_func(path, train_images, hole_label, item_tfms=Resize(224))
-learn = vision_learner(dls, resnet34, metrics=error_rate)
-learn.fine_tune(10)
-learn.export('holes')
-# print(learn.predict(train_images[0]))
+def vertical_label(f):
+    return path_to_tp[f].verticals
+
+def horizontal_label(f):
+    return path_to_tp[f].horizontals
+
+def other_label(f):
+    return path_to_tp[f].others
+
+def oil_label(f):
+    return path_to_tp[f].oil
+
+def fringe_label(f):
+    return path_to_tp[f].fringe
+
+train_tp = [
+    ('holes', hole_label),
+    ('verticals', vertical_label),
+    ('horizontals', horizontal_label),
+    ('others', other_label),
+    ('oil', oil_label),
+    ('fringe', fringe_label),
+]
+
+for name, label_fn in train_tp:
+    dls = ImageDataLoaders.from_name_func(path, train_images, label_fn, item_tfms=Resize(224))
+    learn = vision_learner(dls, resnet34, metrics=error_rate)
+    learn.fine_tune(10)
+    learn.export(name)
