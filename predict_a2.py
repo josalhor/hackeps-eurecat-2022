@@ -36,13 +36,40 @@ for path in glob.glob(f'{a2_path}/**/*.tif', recursive=True):
     if path not in train_images_set:
         predict_images.append(Path(path))
 
+train_tp = [
+    ('holes'),
+    ('verticals'),
+    ('horizontals'),
+    ('others'),
+    ('oil'),
+    ('fringe'),
+]
 
-def hole_label(f):
-    return path_to_tp[f].holes
+results_by_type = {}
 
-learn = load_learner('/home/josalhor/Desktop/eurecat-2022/A/A/A2/holes')
-results = {}
-for path in predict_images:
-    results[path] = learn.predict(path)
+for pred_type in train_tp:
+    learn = load_learner(f'/home/josalhor/Desktop/eurecat-2022/A/A/A2/{pred_type}')
+    results = {}
+    for path in predict_images:
+        results[path] = learn.predict(path)
+    results_by_type[pred_type] = results
+
+a2_attr = 'path holes stripe oil creased frige others'
+a2_header = a2_attr.split(' ')
+
+with open('a2_pred.csv', 'w', encoding='UTF8') as f:
+    writer = csv.writer(f)
+
+    # write the header
+    writer.writerow(a2_header)
+
+
+    for path in predict_images:
+        row = [path]
+        for pred_type in train_tp:
+            row.append(
+                results_by_type[pred_type][path]
+            )
+        writer.writerow(row)
 
 print(results)
