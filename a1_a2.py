@@ -1,7 +1,7 @@
 
 
-csv_path = '/home/josalhor/Desktop/eurecat-2022/A/A/A1/img_tag.csv'
-a1_path = '/home/josalhor/Desktop/eurecat-2022/A/A/A1'
+csv_path = './A/A/img_tag.csv'
+a1_path = './A/A/A1'
 import unicodedata
 def strip_accents(s):
    return ''.join(c for c in unicodedata.normalize('NFD', s)
