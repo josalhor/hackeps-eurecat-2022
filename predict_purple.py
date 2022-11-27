@@ -68,6 +68,9 @@ results_by_type = {}
 
 for pred_type in train_tp:
     learn = load_learner(f'./orange/models/{pred_type}')
+    interp = ClassificationInterpretation.from_learner(learn)
+    interp.plot_confusion_matrix()
+    exit(-1)
     results = {}
     for path in predict_images:
         results[path] = learn.predict(path)
