@@ -68,9 +68,6 @@ results_by_type = {}
 
 for pred_type in train_tp:
     learn = load_learner(f'./orange/models/{pred_type}')
-    interp = ClassificationInterpretation.from_learner(learn)
-    interp.plot_confusion_matrix()
-    exit(-1)
     results = {}
     for path in predict_images:
         results[path] = learn.predict(path)
@@ -78,7 +75,7 @@ for pred_type in train_tp:
 a2_attr = 'path holes stripe oil creased frige others'
 a2_header = a2_attr.split(' ')
 
-with open('a2_pred.csv', 'w', encoding='UTF8') as f:
+with open('orange_pred.csv', 'w', encoding='UTF8') as f:
     writer = csv.writer(f)
 
     # write the header
