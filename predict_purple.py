@@ -3,88 +3,67 @@ import csv
 import glob
 from collections import namedtuple
 from pathlib import Path
-csv_path = 'A/A/train-hackeps_a2.csv'
-a2_path = Path('A/A/A2')
+csv_path = 'A/A/img_tag.csv'
+a1_path = Path('A/A/A1')
 
 # files = get_image_files(path)
 
-a2_attr = 'id1 id2 name path holes verticals horizontals others oil fringe'
-A2Row = namedtuple('A2Row', a2_attr)
-# print(len(files))
-# input('w')
+a1_attr = 'path description'
+A1Row = namedtuple('A1Row', a1_attr)
+
 
 rows = []
 path_to_tp = {}
 train_images = []
 train_images_set = set()
 
+a1_attr = 'path description'
+A1Row = namedtuple('A1Row', a1_attr)
+csv_path = 'a1.csv'
+
+rows = []
+description_map = {}
+A1_input = []
+
 with open(csv_path, newline='') as csvfile:
     spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
-    for row in spamreader:
-
-        row = row[:4] + list(map(int, row[4:]))
-        row = A2Row(*row)
-        pname = Path(row.path).name
-        assert pname not in path_to_tp
-        path_to_tp[pname] = row
+    for i, (partial_path, description) in enumerate(spamreader):
+        if i == 0: continue
+        path = Path('A/A/A1') / partial_path
+        row = A1Row(path, description)
         rows.append(row)
-        train_images.append(Path(row.path))
-        train_images_set.add(row.path)
+        description_map[row.path.name] = row
+        A1_input.append(row.path)
 
 predict_images = []
-for path in glob.glob(f'{a2_path}/**/*.tif', recursive=True):
+for path in glob.glob(f'{a1_path}/**/*.tif', recursive=True):
     if path not in train_images_set:
         predict_images.append(Path(path))
 
-train_tp = [
-    ('holes'),
-    ('verticals'),
-    ('horizontals'),
-    ('others'),
-    ('oil'),
-    ('fringe'),
-]
-
-def hole_label(f):
-    return path_to_tp[f].holes
-
-def vertical_label(f):
-    return path_to_tp[f].verticals
-
-def horizontal_label(f):
-    return path_to_tp[f].horizontals
-
-def other_label(f):
-    return path_to_tp[f].others
-
-def oil_label(f):
-    return path_to_tp[f].oil
-
-def fringe_label(f):
-    return path_to_tp[f].fringe
+def description_label(f):
+    return description_map[f].description
+path = Path('A/A/A1')
 
 
-results_by_type = {}
+learn = load_learner(f'./purple/models/purple')
+results = {}
+for path in predict_images:
+    results[path] = learn.predict(path)
+    pred , _, _  = results[path]
+    print(path, pred)
+a1_attr = 'path description'
+a1_header = a1_attr.split(' ')
 
-for pred_type in train_tp:
-    learn = load_learner(f'./orange/models/{pred_type}')
-    results = {}
-    for path in predict_images:
-        results[path] = learn.predict(path)
-    results_by_type[pred_type] = results
-a2_attr = 'path holes stripe oil creased frige others'
-a2_header = a2_attr.split(' ')
-
-with open('orange_pred.csv', 'w', encoding='UTF8') as f:
+with open('purple_pred.csv', 'w', encoding='UTF8') as f:
     writer = csv.writer(f)
 
     # write the header
-    writer.writerow(a2_header)
+    writer.writerow(a1_attr)
 
 
     for path in predict_images:
         row = [path]
-        for pred_type in train_tp:
-            pred , _, _  = results_by_type[pred_type][path]
-            row.append(pred)
+        pred , _, _  = results[path]
+        print(path, pred)
+        row.append(pred)
         writer.writerow(row)
